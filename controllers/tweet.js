@@ -35,7 +35,7 @@ const create_tweets = (tweets) => {
     .then(tweet_ids => {
       let new_tweets = [...tweets]
       if (tweet_ids) {
-        new_tweets = new_tweets.filter(tweet => tweet_ids.includes(tweet.tweet_id))
+        new_tweets = new_tweets.filter(tweet => !tweet_ids.includes(tweet.tweet_id))
       }
       if (!new_tweets.length) {
         return new Promise(resolve => resolve())
