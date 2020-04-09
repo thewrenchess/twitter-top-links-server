@@ -66,7 +66,7 @@ const build_params = (access_token) => {
 }
 
 const get_friend_ids = async ({ access_token, access_token_secret }) => {
-  console.log('on getting friend ids')
+  console.log('getting friend ids')
   const url = `${TWITTER_API_URL}/${TWITTER_API_VERSION}/friends/ids.json`
   const params = build_params(access_token)
 
@@ -105,7 +105,7 @@ const get_friend_ids = async ({ access_token, access_token_secret }) => {
 
 const get_tweets = async (user_id_array, last_synced, { access_token, access_token_secret }) => {
   const url = `${TWITTER_API_URL}/${TWITTER_API_VERSION}/statuses/user_timeline.json`
-  console.log('on getting tweets', url)
+  console.log('getting tweets', url)
   const params = build_params(access_token)
 
 
