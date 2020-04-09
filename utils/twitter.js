@@ -143,6 +143,20 @@ const get_tweets = async (user_id_array, last_synced, { access_token, access_tok
             params: query_params
           }
         )
+  
+        const data = response.data
+        console.log(`received ${data.length} tweets`)
+        const tweet_array = data.filter(tweet => {
+          const created_at = new Date(tweet.created_at)
+          return created_at > datetime_to_stop
+        })
+        if (tweet_array.length > 0 && tweet_array.length === data.length) {
+          total_tweet_array.concat(tweet_array)
+          console.log(`total ${total_tweet_array.length} tweets`)
+          since_id = data[data.length - 1].id
+        } else {
+          break
+        }
       } catch (err) {
         const eror_data_array = err.response.data || []
         const has_code_34 = error_data_array.some(error_data => {
@@ -154,20 +168,6 @@ const get_tweets = async (user_id_array, last_synced, { access_token, access_tok
           throw new Error(err)
         }
         
-        break
-      }
-  
-      const data = response.data
-      console.log(`received ${data.length} tweets`)
-      const tweet_array = data.filter(tweet => {
-        const created_at = new Date(tweet.created_at)
-        return created_at > datetime_to_stop
-      })
-      if (tweet_array.length > 0 && tweet_array.length === data.length) {
-        total_tweet_array.concat(tweet_array)
-        console.log(`total ${total_tweet_array.length} tweets`)
-        since_id = data[data.length - 1].id
-      } else {
         break
       }
     }
