@@ -1,4 +1,5 @@
 {
+  "builds": [{ "src": "app.js", "use": "@now/node-server" }],
   "build": {
     "env": {
       "CLIENT_BASE_URL": "@client_base_url",
