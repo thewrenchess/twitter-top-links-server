@@ -102,9 +102,8 @@ const get_friend_ids = async ({ access_token, access_token_secret }) => {
   return user_id_array
 }
 
-const get_tweets = async (user_id_array, last_synced, { access_token, access_token_secret }) => {
+const get_tweets = async (user_id, last_synced, { access_token, access_token_secret }) => {
   const url = `${TWITTER_API_URL}/${TWITTER_API_VERSION}/statuses/user_timeline.json`
-  console.log('getting tweets', url)
   const params = build_params(access_token)
 
 
@@ -112,72 +111,67 @@ const get_tweets = async (user_id_array, last_synced, { access_token, access_tok
   let total_tweet_array = []
   let seven_days_ago = new Date()
   seven_days_ago.setDate(seven_days_ago.getDate() - 7)
-  if (last_synced) {
-    last_synced = new Date(last_synced)
-  }
   const datetime_to_stop = (last_synced && last_synced > seven_days_ago) ? last_synced : seven_days_ago
 
-  for (let user_id of user_id_array) {
-    let max_id = 0
+  let max_id = 0
 
-    while (max_id >= 0) {
-      const query_params = { user_id }
-      if (max_id > 0) {
-        query_params.max_id = max_id
-      }
-  
-      try {
-        const response = await axios.get(
-          url,
-          {
-            headers: {
-              Authorization: build_oauth_str(
-                'GET',
-                url,
-                { ...params, ...query_params },
-                access_token_secret
-              )
-            },
-            params: query_params
-          }
-        )
-  
-        const data = response.data
-        if (!data || !data.length) {
-          break
-        }
-        const tweet_array = data.filter(tweet => {
-          const created_at = new Date(tweet.created_at)
-          return created_at > datetime_to_stop
-        })
-        if (tweet_array.length > 0) {
-          total_tweet_array = total_tweet_array.concat(tweet_array)
-        }
-        if (tweet_array.length === data.length) {
-          const id_str = data[data.length - 1].id_str
-          const id_str_len = id_str.length
-          let last_digit = parseInt(id_str.slice(-1)) - 1
-          if (last_digit < 0) {
-            last_digit = 9
-          }
-          max_id = `${id_str.slice(0, id_str_len - 1)}${last_digit}`
-        } else {
-          break
-        }
-      } catch (err) {
-        const error_response = err.reponse || {}
-        const eror_data_array = error_response.data || []
-        const has_code_34 = eror_data_array.some(error_data => {
-          const code = error_data.code || -1
-          return code === 34
-        })
+  while (max_id >= 0) {
+    const query_params = { user_id }
+    if (max_id > 0) {
+      query_params.max_id = max_id
+    }
 
-        if (!has_code_34) {
-          throw new Error(err)
+    try {
+      const response = await axios.get(
+        url,
+        {
+          headers: {
+            Authorization: build_oauth_str(
+              'GET',
+              url,
+              { ...params, ...query_params },
+              access_token_secret
+            )
+          },
+          params: query_params
         }
-        
+      )
+
+      const data = response.data
+      if (!data || !data.length) {
         break
       }
+      const tweet_array = data.filter(tweet => {
+        const created_at = new Date(tweet.created_at)
+        return created_at > datetime_to_stop
+      })
+      if (tweet_array.length > 0) {
+        total_tweet_array = total_tweet_array.concat(tweet_array)
+      }
+      if (tweet_array.length === data.length) {
+        const id_str = data[data.length - 1].id_str
+        const id_str_len = id_str.length
+        let last_digit = parseInt(id_str.slice(-1)) - 1
+        if (last_digit < 0) {
+          last_digit = 9
+        }
+        max_id = `${id_str.slice(0, id_str_len - 1)}${last_digit}`
+      } else {
+        break
+      }
+    } catch (err) {
+      const error_response = err.reponse || {}
+      const eror_data_array = error_response.data || []
+      const has_code_34 = eror_data_array.some(error_data => {
+        const code = error_data.code || -1
+        return code === 34
+      })
+
+      if (!has_code_34) {
+        throw new Error(err)
+      }
+      
+      break
     }
   }
 

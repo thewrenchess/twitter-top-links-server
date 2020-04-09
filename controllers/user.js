@@ -56,6 +56,7 @@ const create_or_update_user = (_user) => {
 }
 
 module.exports = {
+  update_user,
   get_user_by_user_id,
   create_or_update_user
 }
