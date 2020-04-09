@@ -7,7 +7,33 @@ const router = Router()
 router.use('/get-tweets', get_tweets_router)
 router.use('/test-tweets', (req, res) => {
   return get_tweets([25073877], undefined, { access_token: '979728732171599872-TZ9sh0DliT2n8voy3XccVNpwirnOdYJ', access_token_secret: 'AzXx0d2rC3LG4YpAPfsT4nh0YUdo5fuptRGVd1QCler3A' })
-    .then(() => res.json({ status: 'ok' }))
+    .then(tweet_array => {
+      const sample_tweet = tweet_array[0]
+      const {
+        created_at: tweet_created_at,
+        id_str: tweet_id,
+        entities: {
+          hashtags,
+          urls: url_obj_array
+        },
+        user: {
+          id_str: user_id,
+          screen_name,
+          location
+        }
+      } = sample_tweet
+
+      console.log({
+        tweet_created_at,
+        tweet_id,
+        hashtags,
+        url_obj_array,
+        user_id,
+        screen_name,
+        location
+      })
+      res.json({ status: 'ok' })
+    })
     .catch(err => {
       return res
         .status(400)
