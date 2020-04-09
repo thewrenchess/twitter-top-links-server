@@ -1,15 +1,24 @@
 const Tweet = require('../models/tweet')
 
-const find_tweets = (user_id) => {
+const find_tweets_by_user_id_array = (user_id_array) => {
   let seven_days_ago = new Date()
   seven_days_ago.setDate(seven_days_ago.getDate() - 7)
 
   return Tweet
-    .find({
-      user_id,
-      tweet_created_at: { $gt: seven_days_ago }
+    .find({})
+    .then(tweets => {
+      if (tweets && tweets.length) {
+        return tweets.filter(tweet => {
+          const {
+            user_id,
+            tweet_created_at
+          } = tweet
+
+          return user_id_array.includes(user_id)
+            && new Date(tweet_created_at) > seven_days_ago
+        })
+      }
     })
-    .then(tweets => tweets || [])
     .catch(err => {
       throw new Error(err)
     })
@@ -51,6 +60,6 @@ const create_tweets = (tweets) => {
 }
 
 module.exports = {
-  find_tweets,
+  find_tweets_by_user_id_array,
   create_tweets
 }

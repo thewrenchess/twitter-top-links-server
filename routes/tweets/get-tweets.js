@@ -9,7 +9,7 @@ const {
   get_tweets
 } = require('../../utils/twitter')
 const {
-  find_tweets,
+  find_tweets_by_user_id_array,
   create_tweets
 } = require('../../controllers/tweet')
 
@@ -59,13 +59,6 @@ const filter_and_cherrypick_tweet_array = (tweet_array) => {
         location
       }
     })
-}
-
-const get_existing_tweet_array = (user_id_array, last_synced) => {
-  const promise_array = user_id_array
-    .map(user_id => find_tweets(user_id, last_synced))
-  return Promise.all(promise_array)
-    .then(tweets_array => tweets_array.flat())
 }
 
 const get_new_tweet_array = (user_id_array, last_synced, { access_token, access_token_secret }) => {
@@ -135,7 +128,7 @@ router.get('/', (req, res) => {
             get_new_tweet_array(query_user_id_array, last_synced, { access_token, access_token_secret })
           ]
           if (last_synced) {
-            promise_array.push(get_existing_tweet_array(query_user_id_array))
+            promise_array.push(find_tweets_by_user_id_array(query_user_id_array))
           }
           return Promise.all(promise_array)
             .then(tweets_array => {
