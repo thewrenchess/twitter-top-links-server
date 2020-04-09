@@ -1,11 +1,6 @@
 const { Router } = require('express')
 const TwitterAPI = require('node-twitter-api')
 
-const TWITTER_API_URL = process.env.TWITTER_API_URL
-if (!TWITTER_API_URL) {
-  throw new Error('missing TWITTER_API_URL')
-}
-
 const TWITTER_CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY
 if (!TWITTER_CONSUMER_KEY) {
   throw new Error('missing TWITTER_CONSUMER_KEY')

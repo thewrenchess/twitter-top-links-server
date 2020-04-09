@@ -128,20 +128,34 @@ const get_tweets = async (user_id_array, last_synced, { access_token, access_tok
   
       console.log('hello', query_params)
   
-      const response = await axios.get(
-        url,
-        {
-          headers: {
-            Authorization: build_oauth_str(
-              'GET',
-              url,
-              { ...params, ...query_params },
-              access_token_secret
-            )
-          },
-          params: query_params
+      try {
+        const response = await axios.get(
+          url,
+          {
+            headers: {
+              Authorization: build_oauth_str(
+                'GET',
+                url,
+                { ...params, ...query_params },
+                access_token_secret
+              )
+            },
+            params: query_params
+          }
+        )
+      } catch (err) {
+        const eror_data_array = err.response.data || []
+        const has_code_34 = error_data_array.some(error_data => {
+          const code = error_data.code || -1
+          return code === 34
+        })
+
+        if (!has_code_34) {
+          throw new Error(err)
         }
-      )
+        
+        break
+      }
   
       const data = response.data
       console.log(`received ${data.length} tweets`)
