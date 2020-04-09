@@ -1,12 +1,10 @@
 {
   "builds": [{ "src": "app.js", "use": "@now/node-server" }],
-  "build": {
-    "env": {
-      "CLIENT_BASE_URL": "@client_base_url",
-      "MONGO_PASSWORD": "@mongo_password",
-      "TWITTER_CONSUMER_KEY": "@twitter_consumer_key",
-      "TWITTER_CONSUMER_SECRET": "@twitter_consumer_secret"
-    }
+  "env": {
+    "CLIENT_BASE_URL": "@client_base_url",
+    "MONGO_PASSWORD": "@mongo_password",
+    "TWITTER_CONSUMER_KEY": "@twitter_consumer_key",
+    "TWITTER_CONSUMER_SECRET": "@twitter_consumer_secret"
   },
   "routes": [
     {
