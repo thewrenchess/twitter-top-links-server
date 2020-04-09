@@ -10,15 +10,11 @@
   },
   "routes": [
     {
-      "src": "/auth",
+      "src": "/api",
       "dest": "/app.js"
     },
     {
-      "src": "/tweets",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/health-check",
+      "src": "/api/health-check",
       "dest": "/app.js"
     }
   ]
