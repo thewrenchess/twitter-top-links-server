@@ -66,7 +66,6 @@ const build_params = (access_token) => {
 }
 
 const get_friend_ids = async ({ access_token, access_token_secret }) => {
-  console.log('getting friend ids')
   const url = `${TWITTER_API_URL}/${TWITTER_API_VERSION}/friends/ids.json`
   const params = build_params(access_token)
 
@@ -75,7 +74,7 @@ const get_friend_ids = async ({ access_token, access_token_secret }) => {
   let next_cursor = 0
 
   while (next_cursor >= 0) {
-    const query_params = { count: 5 }
+    const query_params = { stringify_ids: true }
     if (next_cursor > 0) {
       query_params.cursor = next_cursor
     }
