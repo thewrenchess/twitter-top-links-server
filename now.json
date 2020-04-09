@@ -8,8 +8,20 @@
   },
   "routes": [
     {
-      "src": "/api",
+      "src": "/api/health-check",
       "dest": "/app.js"
-    }
+    },
+    {
+      "src": "/api/auth/request-token",
+      "dest": "/app.js"
+    },
+    {
+      "src": "/api/auth/exchange-token",
+      "dest": "/app.js"
+    },
+    {
+      "src": "/api/tweets/get-tweets",
+      "dest": "/app.js"
+    },
   ]
 }
