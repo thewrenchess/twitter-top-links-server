@@ -11,7 +11,7 @@ const tweet_schema = new mongoose.Schema(
     user_id: {
       type: String,
       trim: true,
-      required: true
+      default: ''
     },
     screen_name: {
       type: String,
