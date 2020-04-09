@@ -8,6 +8,10 @@ const {
   get_friend_ids,
   get_tweets
 } = require('../../utils/twitter')
+const {
+  find_tweets,
+  batch_create_or_update_tweet
+} = require('../../controllers/tweet')
 
 const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL
 if (!CLIENT_BASE_URL) {
@@ -57,6 +61,31 @@ const filter_and_cherrypick_tweet_array = (tweet_array) => {
     })
 }
 
+const get_existing_tweet_array = (user_id_array, last_synced) => {
+  const promise_array = user_id_array
+    .map(user_id => find_tweets(user_id, last_synced))
+  return Promise.all(promise_array)
+    .then(tweets_array => tweets_array.flat())
+}
+
+const get_new_tweet_array = (user_id_array, last_synced, { access_token, access_token_secret }) => {
+  const promise_array = user_id_array
+    .map(user_id => {
+      return get_tweets(user_id, last_synced, { access_token, access_token_secret })
+    })
+  return Promise.all(promise_array)
+    .then(tweets_array => {
+      const tweet_array = tweets_array.flat()
+      const filtered_array = filter_and_cherrypick_tweet_array(tweet_array)
+      return filtered_array
+    })
+    .then(tweet_array => {
+      return batch_create_or_update_tweet(tweet_array)
+        .then(() => {
+          return tweet_array
+        })
+    })
+}
 
 const router = Router()
 
@@ -99,21 +128,22 @@ router.get('/', (req, res) => {
           } = user
 
           const query_user_id_array = [user_id].concat(friend_id_array)
-          const promise_array = query_user_id_array
-            .map(user_id => {
-              return get_tweets(user_id, last_synced, { access_token, access_token_secret })
-            })
+          const promise_array = [
+            get_new_tweet_array(query_user_id_array, last_synced, { access_token, access_token_secret })
+          ]
+          if (last_synced) {
+            promise_array.push(get_existing_tweet_array(query_user_id_array))
+          }
           return Promise.all(promise_array)
             .then(tweets_array => {
               const tweet_array = tweets_array.flat()
-              const filtered_array = filter_and_cherrypick_tweet_array(tweet_array)
-              
-              return update_user(user, { last_synced: new Date })
-                .then(() => filtered_array)
-           })
+
+              return update_user(user, { last_synced: new Date() })
+                .then(() => tweet_array)
+            })
         })
     })
-    .then((tweet_array) => res.json(tweet_array))
+    .then(tweet_array => res.json({ tweet_array }))
     .catch(err => {
       return res
         .status(400)
