@@ -7,5 +7,19 @@
       "TWITTER_CONSUMER_KEY": "@twitter_consumer_key",
       "TWITTER_CONSUMER_SECRET": "@twitter_consumer_secret"
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/auth",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/tweets",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/health-check",
+      "dest": "/server.js"
+    }
+  ]
 }
