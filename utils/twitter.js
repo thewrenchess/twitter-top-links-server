@@ -110,23 +110,22 @@ const get_tweets = async (user_id_array, last_synced, { access_token, access_tok
 
 
   const axios = make_retry_axios({}, MAX_RETRIES, SLEEP_MS)
-  const total_tweet_array = []
-  const seven_days_ago = new Date() - 7 * 24 * 60 * 60
+  let total_tweet_array = []
+  let seven_days_ago = new Date()
+  seven_days_ago.setDate(seven_days_ago.getDate() - 7)
   if (last_synced) {
-    last_synced = new Date()
+    last_synced = new Date(last_synced)
   }
-  const datetime_to_stop = last_synced > seven_days_ago ? last_synced : seven_days_ago
+  const datetime_to_stop = (last_synced && last_synced > seven_days_ago) ? last_synced : seven_days_ago
 
   for (let user_id of user_id_array) {
-    let since_id = 0
+    let max_id = 0
 
-    while (since_id >= 0) {
+    while (max_id >= 0) {
       const query_params = { user_id }
-      if (since_id > 0) {
-        query_params.since_id = since_id
+      if (max_id > 0) {
+        query_params.max_id = max_id
       }
-  
-      console.log('hello', query_params)
   
       try {
         const response = await axios.get(
@@ -145,20 +144,30 @@ const get_tweets = async (user_id_array, last_synced, { access_token, access_tok
         )
   
         const data = response.data
-        console.log(`received ${data.length} tweets`)
+        if (!data || !data.length) {
+          break
+        }
         const tweet_array = data.filter(tweet => {
           const created_at = new Date(tweet.created_at)
           return created_at > datetime_to_stop
         })
-        if (tweet_array.length > 0 && tweet_array.length === data.length) {
-          total_tweet_array.concat(tweet_array)
-          console.log(`total ${total_tweet_array.length} tweets`)
-          since_id = data[data.length - 1].id
+        if (tweet_array.length > 0) {
+          total_tweet_array = total_tweet_array.concat(tweet_array)
+        }
+        if (tweet_array.length === data.length) {
+          const id_str = data[data.length - 1].id_str
+          const id_str_len = id_str.length
+          let last_digit = parseInt(id_str.slice(-1)) - 1
+          if (last_digit < 0) {
+            last_digit = 9
+          }
+          max_id = `${id_str.slice(0, id_str_len - 1)}${last_digit}`
         } else {
           break
         }
       } catch (err) {
-        const eror_data_array = err.response.data || []
+        const error_response = err.reponse || {}
+        const eror_data_array = error_response.data || []
         const has_code_34 = eror_data_array.some(error_data => {
           const code = error_data.code || -1
           return code === 34
