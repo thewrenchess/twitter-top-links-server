@@ -11,15 +11,15 @@
   "routes": [
     {
       "src": "/auth",
-      "dest": "/server.js"
+      "dest": "/app.js"
     },
     {
       "src": "/tweets",
-      "dest": "/server.js"
+      "dest": "/app.js"
     },
     {
       "src": "/health-check",
-      "dest": "/server.js"
+      "dest": "/app.js"
     }
   ]
 }
