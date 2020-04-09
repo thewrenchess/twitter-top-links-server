@@ -10,7 +10,7 @@ const {
 } = require('../../utils/twitter')
 const {
   find_tweets,
-  batch_create_or_update_tweet
+  create_tweets
 } = require('../../controllers/tweet')
 
 const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL
@@ -80,7 +80,7 @@ const get_new_tweet_array = (user_id_array, last_synced, { access_token, access_
       return filtered_array
     })
     .then(tweet_array => {
-      return batch_create_or_update_tweet(tweet_array)
+      return create_tweets(tweet_array)
         .then(() => {
           return tweet_array
         })
@@ -100,6 +100,9 @@ router.get('/', (req, res) => {
 
   return get_user_by_user_id(user_id)
     .then(user => {
+      if (!user) {
+        throw new Error('no user found')
+      }
       const {
         user_id,
         screen_name,

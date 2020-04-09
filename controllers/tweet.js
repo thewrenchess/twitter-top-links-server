@@ -15,79 +15,42 @@ const find_tweets = (user_id) => {
     })
 }
 
-const create_tweet = (_tweet) => {
-  const tweet = new Tweet(_tweet)
-
-  return tweet
-    .save()
-    .then(tweet => tweet)
-    .catch(err => {
-      throw new Error(err)
-    })
-}
-
-const update_tweet = (tweet, _tweet) => {
+const find_all_tweet_id = () => {
   return Tweet
-    .findOneAndUpdate(
-      { tweet_id: tweet.tweet_id },
-      { $set: _tweet },
-      { new: true }
-    )
-    .then(tweet => tweet)
-    .catch(err => {
-      throw new Error(err)
-    })
-}
-
-const sleep = () => {
-  const sleep_ms = 60 * 1000
-
-  return new Promise((resolve) => {
-    return setTimeout(() => {
-      resolve({})
-    }, sleep_ms)
-  })
-}
-
-const create_or_update_tweet = async (_tweet) => {
-  return Tweet
-    .findOne({ tweet_id: _tweet.tweet_id })
-    .then(tweet => {
-      if (tweet) {
-        return update_tweet(tweet, _tweet)
+    .find({})
+    .select('tweet_id')
+    .then(tweets => {
+      if (tweets.length) {
+        return tweets.map(tweet => tweet.tweet_id)
       }
-      return create_tweet(_tweet)
+      return null
     })
     .catch(err => {
       throw new Error(err)
     })
 }
 
-const batch_create_or_update_tweet = async (tweet_array) => {
-  try {
-    const tweet_array_to_split = [...tweet_array]
-    const batch_tweet_array = []
-
-    while (tweet_array_to_split.length) {
-      batch_tweet_array.push(tweet_array_to_split.splice(0, 80))
-    }
-
-    for (let i = 0; i < batch_tweet_array.length; i++) {
-      if (i) {
-        sleep()
+const create_tweets = (tweets) => {
+  return find_all_tweet_id()
+    .then(tweet_ids => {
+      let new_tweets = [...tweets]
+      if (tweet_ids) {
+        new_tweets = new_tweets.filter(tweet => tweet_ids.includes(tweet.tweet_id))
       }
-
-      const tweet_array = batch_tweet_array[i]
-      const promise_array = tweet_array.map(tweet => create_or_update_tweet(tweet))
-      await Promise.all(promise_array)
-    }
-    return []
-  } catch (err) {
-    throw new Error(err)
-  }
+      if (!new_tweets.length) {
+        return new Promise(resolve => resolve())
+      }
+      return Tweet
+        .collection
+        .insertMany(new_tweets, { ordered: false})
+        .then(() => [])
+        .catch(err => {
+          throw new Error(err)
+        })
+    })
 }
 
 module.exports = {
   find_tweets,
-  batch_create_or_update_tweet
+  create_tweets
 }
